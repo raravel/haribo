@@ -60,7 +60,7 @@ export default async function(content: string) {
 		for ( let i = 1; i < contents.length; i++ ) {
 			const m = contents[i].match(/(\W+) (.*)/);
 			if ( m ) {
-				obj[K[m[1]]] = m[2];
+				obj[K[m[1]] || m[1]] = m[2];
 			}
 		}
 	}
