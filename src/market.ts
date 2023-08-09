@@ -1,4 +1,4 @@
-import { MarketOption, RequestMarketItems } from "@mokoko/sdk";
+import { Category, MarketOption, RequestMarketItems } from "@mokoko/sdk";
 import sdk from './sdk';
 
 const K = {
@@ -6,10 +6,13 @@ const K = {
 	'정렬': 'Sort',
 	'티어': 'ItemTier',
 	'페이지': 'PageNo',
+	'분류': 'CategoryCode',
+	'직업': 'CharacterClass',
 	'정렬기준': 'SortCondition',
 };
 let marketOptions: MarketOption|null = null;
 let marketOptionsThresholdDate = Date.now();
+const T = (str: string = '') => str.replace(/\s/g, '');
 
 async function markets(obj: RequestMarketItems): Promise<any[]> {
 	const now = Date.now();
@@ -60,7 +63,27 @@ export default async function(content: string) {
 		for ( let i = 1; i < contents.length; i++ ) {
 			const m = contents[i].match(/(\W+) (.*)/);
 			if ( m ) {
-				obj[K[m[1]] || m[1]] = m[2];
+				const key = K[m[1]] || m[1];
+				if ( key === 'CategoryCode' ) {
+					(() => {
+						for ( const category of marketOptions?.Categories as Category[] ) {
+							if ( T(category.CodeName).includes(T(m[2])) ) {
+								obj[key] = category?.Code || m[2];
+								return;
+							}
+							if ( category.Subs ) {
+								for ( const subCategory of category.Subs ) {
+									if ( T(subCategory.CodeName).includes(T(m[2])) ) {
+										obj[key] = subCategory?.Code || m[2];
+										return;
+									}
+								}
+							}
+						}
+					})();
+				} else {
+					obj[key] = m[2];
+				}
 			}
 		}
 	}

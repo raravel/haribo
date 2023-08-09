@@ -14,9 +14,10 @@ const ItemGrades = [
 const DLK = {
 	'최소렙': 'itemMinLevel',
 	'최대렙': 'itemMaxLevel',
+	'티어': 'itemtier',
 	'등급': 'grade',
 	'직업': 'classNo',
-	'카테고리': 'SortCondition',
+	'분류': 'category',
 };
 
 const ClassNoList = [
@@ -269,7 +270,7 @@ async function dictionaryList(params: any) {
 		},
 		...params,
 	}
-	console.log(defaultData);
+	//console.log(defaultData);
 	const { data } = await axios({
 		url: 'https://lostark.game.onstove.com/ItemDictionary/Search',
 		method: 'GET',
