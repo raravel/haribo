@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { addDescription, joinResultItems } from './utils';
 
 const ItemGrades = [
 	"일반",
@@ -305,10 +306,10 @@ export async function dictionaryListCommand(content: string) {
 
 	const result = await dictionaryList(obj);
 	return `검색된 아이템 수: ${result.totalCount}\n(상위 10개만 보여줍니다.)\n\n` +
-	result.data.map((item, idx) => `${idx+1}. [${item.text}]\n` +
-		`┣등급: ${ItemGrades[item.grade-1]}\n` +
-		`┣티어: ${item.tier}\n` +
-		`┗코드: ${item.key}`).join('\n\n');
+	joinResultItems(result.data, (item, idx) => `${idx+1}. [${item.text}]\n` +
+	`┣등급: ${ItemGrades[item.grade]}\n` +
+	`┣티어: ${item.tier}\n` +
+	`┗코드: ${item.key}`, 3, '\n\n');
 }
 
 
@@ -348,8 +349,9 @@ export async function dictionaryCommand(content: string) {
 	const code = content.replace(/^\.사전\s+/, '');
 	const data = await dictionary(code);
 	
-	let str = `아이템 코드 ${code} 사전\n\n` +
-	Object.values(data.BasicInfo.Tooltip_Item_000).map(getElementText).filter((s) => s.length).join('\n');
+	let str = `아이템 코드 ${code} 사전\n자세히 보려면 전체보기를 눌러주세요.\n\n` +
+	Object.values(data.BasicInfo.Tooltip_Item_000).map(getElementText).filter((s) => s.length).join('\n') +
+	addDescription();
 	if (data.AcquisitionInfo) {
 		str += '\n\n';
 		str += '획득처\n' +

@@ -55,7 +55,9 @@ async function markets(obj: RequestMarketItems): Promise<any[]> {
 
 export default async function(content: string) {
 	const contents = content.split('\n');
-	const ItemName = contents[0].replace(/^\.거래소\s+/, '');
+	const ItemName = contents[0].replace(/^\.거래소\s*/, '');
+	if ( !ItemName ) return '검색 할 아이템 이름이 필요합니다.';
+	console.log('item name', ItemName);
 	const obj: RequestMarketItems = {
 		ItemName,
 	};

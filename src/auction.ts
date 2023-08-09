@@ -139,6 +139,10 @@ export default async function (content: string) {
 		}
 	}
 
+	if ( !obj.CategoryCode ) {
+		return '카테고리 코드가 필요합니다.';
+	}
+
 	const data = await auctions(obj);
 	return `검색된 총 아이템 수: ${data.TotalCount}\n(상위 10개의 아이템만 보여줍니다.)\n\n` +
 	data.Items?.map((item, idx) => `${idx+1}. [${item.Name}]\n` +

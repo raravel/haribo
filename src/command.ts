@@ -1,8 +1,7 @@
 import auctionCommand from './auction';
 import { dictionaryListCommand, dictionaryCommand } from './dictionary';
 import marketCommand from './market';
-
-const addDescription = () => '\u200b'.repeat(500);
+import { addDescription } from './utils';
 
 const commands = [
 	{
@@ -66,7 +65,7 @@ const commands = [
 		command: '거래소',
 		description: '거래소에있는 아이템을 상세하게 검색합니다.',
 		help: '거래소에있는 아이템을 상세하게 검색합니다.\n\n' +
-			'.거래소 [아이템 이름]\n등급,정렬,티어,페이지,정렬기준\n\n더 자세한 사용법은 더보기를 누르세요.\n' +
+			'.거래소 [아이템 이름]\n등급,정렬,티어,페이지,정렬기준,분류,직업\n\n더 자세한 사용법은 더보기를 누르세요.\n' +
 			addDescription() + '\n' +
 			'.거래소 [아이템 이름]\n' +
 			'분류: 아이템 카테고리입니다. (아바타, 요리 등)\n' +
@@ -82,24 +81,26 @@ const commands = [
 ]
 
 export function help(content: string) {
-	const command = content.replace(/^\.?\s+/, '');
+	const command = content.replace(/^\.\?\s*/, '');
+	console.log('help command', command);
 	const item = commands.find(c => c.command === command);
 	if ( item ) {
+		console.log(item.help);
 		return item.help;
 	} else {
 		return commands.map(c => `.${c.command} : ${c.description}`).join('\n');
 	}
 }
 
-export function run(content: string) {
+export async function run(content: string) {
 	const command = commands.find(c => content.startsWith('.' + c.command));
 	if ( command ) {
 		try {
-			return command.callback(content);
+			const res = await command.callback(content);
+			console.log('res', res);
+			return res;
 		} catch (e) {
-			return help('.?');
+			return help(`.? ${command.command}`);
 		}
-	} else {
-		return help('.?');
 	}
 }
