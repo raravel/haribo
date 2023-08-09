@@ -1,5 +1,6 @@
 import { Category, MarketOption, RequestMarketItems } from "@mokoko/sdk";
 import sdk from './sdk';
+import { joinResultItems } from "./utils";
 
 const K = {
 	'등급': 'ItemGrade',
@@ -15,11 +16,6 @@ let marketOptionsThresholdDate = Date.now();
 const T = (str: string = '') => str.replace(/\s/g, '');
 
 async function markets(obj: RequestMarketItems): Promise<any[]> {
-	const now = Date.now();
-	if ( marketOptionsThresholdDate <= now ) {
-		marketOptionsThresholdDate = Date.now() + (1000 * 60 * 60); // 1 hour
-		marketOptions = await sdk.marketsGetOptions();
-	}
 
 	const defaultData: RequestMarketItems = {
 		...{
@@ -49,7 +45,11 @@ async function markets(obj: RequestMarketItems): Promise<any[]> {
 				.map(res => res.Items)
 				.flat(2);
 	} else {
-		return await sdk.marketsGetItems(defaultData) as any[];
+		const res = (await sdk.marketsGetItems(defaultData)).Items?.flat().map(r => ({
+			...r,
+			Category: marketOptions?.Categories?.find(c => c.Code === defaultData.CategoryCode)?.CodeName,
+		}));
+		return res as any[];
 	}
 }
 
@@ -61,6 +61,11 @@ export default async function(content: string) {
 	const obj: RequestMarketItems = {
 		ItemName,
 	};
+	const now = Date.now();
+	if ( marketOptionsThresholdDate <= now ) {
+		marketOptionsThresholdDate = Date.now() + (1000 * 60 * 60); // 1 hour
+		marketOptions = await sdk.marketsGetOptions();
+	}
 	if ( contents.length > 1 ) {
 		for ( let i = 1; i < contents.length; i++ ) {
 			const m = contents[i].match(/(\W+) (.*)/);
@@ -91,12 +96,11 @@ export default async function(content: string) {
 	}
 
 	const data = await markets(obj);
-	return data.map((item) => `[${item.Name}]\n` +
+	return joinResultItems(data, (item) => `[${item.Name}]\n` +
 	` ┣ 분류: ${item.Category}\n` +
 	` ┣ 등급: ${item.Grade}\n` +
 	` ┣ 현재 최소가: ${item.CurrentMinPrice} 💰\n` +
 	` ┣ 최근 판매가: ${item.RecentPrice} 💰\n` +
 	` ┣ 전일 평균가: ${item.YDayAvgPrice} 💰\n` +
-	` ┗ 품목 코드: ${item.Id}`
-	).join('\n\n\n');
+	` ┗ 품목 코드: ${item.Id}`, 3, '\n\n', 300);
 }

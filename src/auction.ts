@@ -1,5 +1,6 @@
 import { AuctionOption, Category, ItemOption, RequestAuctionItems, RequestMarketItems, SearchDetailOption } from "@mokoko/sdk";
 import sdk from './sdk';
+import { joinResultItems } from "./utils";
 
 let auctionOptions: AuctionOption|null = null;
 let auctionOptionsThresholdDate = Date.now();
@@ -145,13 +146,12 @@ export default async function (content: string) {
 
 	const data = await auctions(obj);
 	return `검색된 총 아이템 수: ${data.TotalCount}\n(상위 10개의 아이템만 보여줍니다.)\n\n` +
-	data.Items?.map((item, idx) => `${idx+1}. [${item.Name}]\n` +
+	joinResultItems(data.Items as any[], (item, idx) => `${idx+1}. [${item.Name}]\n` +
 	`┣ 등급: ${item.Grade}\n` +
 	`┣ 티어: ${item.Tier}\n` +
 	(item.GradeQuality ? `┣ 품질: ${item.GradeQuality}\n` : '') +
 	`┣ 최소 입찰가: ${item.AuctionInfo?.BidStartPrice} 💰\n` +
 	`┣ 즉시 구매가: ${item.AuctionInfo?.BuyPrice || '-'} 💰\n` +
 	(Number.isInteger(item.AuctionInfo?.TradeAllowCount) ? `┣ 구매 후 남은 거래 횟수: ${item.AuctionInfo?.TradeAllowCount}\n` : '') +
-	'┣ ' + item.Options?.map(deserializeItemOption).filter((s) => s).join('\n┣ ')
-	).join('\n\n');
+	'┣ ' + item.Options?.map(deserializeItemOption).filter((s) => s).join('\n┣ '), 1, '\n\n', 0);
 }

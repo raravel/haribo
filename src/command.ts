@@ -100,6 +100,7 @@ export async function run(content: string) {
 			console.log('res', res);
 			return res;
 		} catch (e) {
+			console.error(e);
 			return help(`.? ${command.command}`);
 		}
 	}
