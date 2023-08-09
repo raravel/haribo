@@ -3,11 +3,11 @@ import sdk from './sdk';
 
 const K = {
 	'등급': 'ItemGrade',
-	'정렬': 'Sort',
 	'티어': 'ItemTier',
 	'페이지': 'PageNo',
 	'분류': 'CategoryCode',
 	'직업': 'CharacterClass',
+	'정렬': 'Sort',
 	'정렬기준': 'SortCondition',
 };
 let marketOptions: MarketOption|null = null;
