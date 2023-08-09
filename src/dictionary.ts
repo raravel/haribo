@@ -280,7 +280,7 @@ async function dictionaryList(params: any) {
 
 export async function dictionaryListCommand(content: string) {
 	const contents = content.split('\n');
-	const name = contents[0].replace(/^\.사전\s+/, '');
+	const name = contents[0].replace(/^\.검색\s+/, '');
 	const obj: any = {
 		name,
 	};
@@ -305,7 +305,68 @@ export async function dictionaryListCommand(content: string) {
 	const result = await dictionaryList(obj);
 	return `검색된 아이템 수: ${result.totalCount}\n(상위 10개만 보여줍니다.)\n\n` +
 	result.data.map((item, idx) => `${idx+1}. [${item.text}]\n` +
-		`등급: ${ItemGrades[item.grade-1]}\n` +
-		`티어: ${item.tier}\n` +
-		`코드: ${item.key}`).join('\n\n');
+		`┣등급: ${ItemGrades[item.grade-1]}\n` +
+		`┣티어: ${item.tier}\n` +
+		`┗코드: ${item.key}`).join('\n\n');
+}
+
+
+async function dictionary(code: number|string) {
+	const { data } = await axios({
+		url: `https://lostark.game.onstove.com/ItemDictionary/Select/${code}`,
+		method: 'GET',
+		params: {
+			_: Date.now(),
+		},
+	});
+	return data.ItemInfo;
+}
+
+const Text = (html) => html.replace(/<br>/ig, '\n').replace(/<[^>]*>/g, '').trim();
+
+function getElementText(obj) {
+	let str = '';
+	switch (obj.type) {
+		case 'NameTagBox':
+			return Text(obj.value);
+		case 'ItemTitle':
+			for ( let i = 0; i < 10; i++ ) {
+				if ( !obj.value['leftStr'+i] ) break;
+				str += Text(obj.value['leftStr'+i]) + '\n';
+			}
+			return Text(str);
+		case 'SingleTextBox':
+			return Text(obj.value);
+		case 'ItemPartBox':
+			return `${Text(obj.value.Element_000)}: ${Text(obj.value.Element_001)}`;
+	}
+	return '';
+}
+
+export async function dictionaryCommand(content: string) {
+	const code = content.replace(/^\.사전\s+/, '');
+	const data = await dictionary(code);
+	
+	let str = `아이템 코드 ${code} 사전\n\n` +
+	Object.values(data.BasicInfo.Tooltip_Item_000).map(getElementText).filter((s) => s.length).join('\n');
+	if (data.AcquisitionInfo) {
+		str += '\n\n';
+		str += '획득처\n' +
+		Object.values(data.AcquisitionInfo).map((info: any) => info.description).join('\n');
+	}
+
+	if (data.UsageInfo) {
+		str += '\n\n';
+		str += '사용처\n';
+		str += Object.values(data.UsageInfo).map((info: any) => {
+			const items: string[] = [];
+			for ( let i = 0;i < 5;i++ ) {
+				const key = 'Usage_' + i.toString().padStart(3, '0');
+				if ( !info[key] ) break;
+				items.push(`${Text(info[key].description)} (레시피: ${info[key].recipeId}, 대상: ${info[key].targetItemId})`);
+			}
+			return items.join('\n');
+		});
+	}
+	return str;
 }

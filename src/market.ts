@@ -69,9 +69,9 @@ export default async function(content: string) {
 	return data.map((item) => `[${item.Name}]\n` +
 	` ┣ 분류: ${item.Category}\n` +
 	` ┣ 등급: ${item.Grade}\n` +
-	` ┣ 현재 최소가: ${item.CurrentMinPrice}\n` +
-	` ┣ 최근 판매가: ${item.RecentPrice}\n` +
-	` ┣ 전일 평균가: ${item.YDayAvgPrice}\n` +
+	` ┣ 현재 최소가: ${item.CurrentMinPrice} 💰\n` +
+	` ┣ 최근 판매가: ${item.RecentPrice} 💰\n` +
+	` ┣ 전일 평균가: ${item.YDayAvgPrice} 💰\n` +
 	` ┗ 품목 코드: ${item.Id}`
 	).join('\n\n\n');
 }
